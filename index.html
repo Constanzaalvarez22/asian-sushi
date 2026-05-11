@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Asian Sushi - Comandas</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/qz-tray/qz-tray.js"></script>
+
+  <style>
+
+    body{
+      font-family: Arial;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    h1{
+      color: #111;
+    }
+
+    h2{
+      margin-top: 30px;
+    }
+
+    button{
+      margin: 5px;
+      padding: 10px 15px;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background: black;
+      color: white;
+    }
+
+    input{
+      margin: 5px;
+      padding: 10px;
+      width: 260px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    #lista{
+      margin-top: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+    }
+
+    #total{
+      color: green;
+      font-size: 28px;
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <h1>Asian Sushi - Comandas</h1>
+
+  <input type="text" id="cliente" placeholder="Nombre cliente">
+
+  <input type="text" id="telefono" placeholder="Número teléfono">
+  <label>Horario de entrega:</label>
+
+<input type="time" id="horaEntrega">
+<label>Método de pago:</label>
+
+<select id="metodoPago">
+
+  <option value="Efectivo">
+    Efectivo
+  </option>
+
+  <option value="Transferencia">
+    Transferencia
+  </option>
+
+  <option value="Tarjeta">
+    Tarjeta
+  </option>
+
+</select>
+  <input type="text" id="Palitos" placeholder="Cantidad de palitos">
+  <input type="text" id="Salsas" placeholder="Salsas">
+
+  <select id="direccion" onchange="actualizarTotal()">
+
+  <option value="Retiro en local|0">
+    Retiro en local - $0
+  </option>
+
+  <option value="Ovalle|2500">
+    Delivery Ovalle - $2.500
+  </option>
+
+  <option value="Extremo Norte|3000">
+    Delivery Extremo Norte - $3.000
+  </option>
+
+  <option value="Extremo Sur|4000">
+    Delivery Extremo Sur - $4.000
+  </option>
+
+</select>
+
+<br><br>
+
+<input
+type="text"
+id="direccionTexto"
+placeholder="Escribe la dirección exacta">
+
+</select>
+
+  <h2>Tablas</h2>
+
+  <button onclick="agregarPedido('Tabla Individual 20', 9990)">
+    Tabla 20
+  </button>
+
+  <button onclick="agregarPedido('Tabla Familiar 40', 18990)">
+    Tabla 40
+  </button>
+
+  <button onclick="agregarPedido('Tabla Familiar 60', 27990)">
+    Tabla 60
+  </button>
+
+  <button onclick="agregarPedido('Tabla Familiar 80', 36990
+    Tabla 80
+  </button>
+
+  <h2>Tablas Especiales y Veggie</h2>
+
+  <button onclick="agregarPedido('Tabla Sake Asian', 22990)">
+    Tabla Sake Asian
+  </button>
+
+  <button onclick="agregarPedido('Tabla Chicken Lovers', 20990)">
+    Tabla Chicken Lovers
+  </button>
+
+  <button onclick="agregarPedido('Tabla Fusión', 20490)">
+    Tabla Fusión
+  </button>
+
+  <button onclick="agregarPedido('Tabla Love Veggie', 22990)">
+    Tabla Love Veggie
+  </button>
+
+  <button onclick="agregarPedido('Tabla Asian Veggie', 20990)">
+    Tabla Asian Veggie
+  </button>
+
+  <h2>Entrantes</h2>
+
+  <button onclick="agregarPedido('Gyosas mixtas', 4990)">
+    Gyosas mixtas
+  </button>
+
+  <button onclick="agregarPedido('Gyosas camarón', 4990)">
+    Gyosas camarón
+  </button>
+
+  <button onclick="agregarPedido('Gyosas cerdo', 4990)">
+    Gyosas cerdo
+  </button>
+
+  <button onclick="agregarPedido('Gyosas pollo', 4990)">
+    Gyosas pollo
+  </button>
+
+  <button onclick="agregarPedido('Camarón rebosado', 5490)">
+    Camarón rebosado
+  </button>
+
+  <button onclick="agregarPedido('Pollo rebosado', 4990)">
+    Pollo rebosado
+  </button>
+
+  <button onclick="agregarPedido('Salmón rebosado', 6290)">
+    Salmón rebosado
+  </button>
+
+  <button onclick="agregarPedido('Nigiri ebi', 4490)">
+    Nigiri ebi
+  </button>
+
+  <button onclick="agregarPedido('Nigiri sake', 4690)">
+    Nigiri sake
+  </button>
+
+  <button onclick="agregarPedido('Nigiri tako', 6290)">
+    Nigiri tako
+  </button>
+
+  <button onclick="agregarPedido('Nigiri avocado', 3890)">
+    Nigiri avocado
+  </button>
+
+  <button onclick="agregarPedido('Nigiri maguro', 4690)">
+    Nigiri maguro
+  </button>
+
+  <button onclick="agregarPedido('Cangri balls', 6990)">
+    Cangri balls
+  </button>
+
+  <button onclick="agregarPedido('Sake balls', 6490)">
+    Sake balls
+  </button>
+
+  <button onclick="agregarPedido('Tori balls', 6490)">
+    Tori balls
+  </button>
+
+  <button onclick="agregarPedido('Seta balls', 6990)">
+    Seta balls
+  </button>
+
+  <h2>Arma Tu Roll</h2>
+
+  <input type="text" id="rollPersonalizado" placeholder="Escribe el roll">
+
+
+  <button onclick="agregarRollPersonalizado()">
+    Agregar Roll
+  </button>
+
+  <h2>Rolls Premium</h2>
+
+  <button onclick="agregarPedido('Ceviche Roll', 9990)">
+    Ceviche Roll
+  </button>
+
+  <button onclick="agregarPedido('Spicy Hot', 7190)">
+    Spicy Hot
+  </button>
+
+  <button onclick="agregarPedido('Criollo Roll', 7190)">
+    Criollo Roll
+  </button>
+
+  <button onclick="agregarPedido('Cheese and Toasted', 6490)">
+    Cheese and Toasted
+  </button>
+
+  <button onclick="agregarPedido('Cheese Hot', 6490)">
+    Cheese Hot
+  </button>
+
+  <button onclick="agregarPedido('Lomo Salteado', 8490)">
+    Lomo Salteado
+  </button>
+
+  <button onclick="agregarPedido('Masago Ebi Furay', 6490)">
+    Masago Ebi Furay
+  </button>
+
+  <button onclick="agregarPedido('Asian Rolls', 9990)">
+    Asian Rolls
+  </button>
+
+  <button onclick="agregarPedido('Sake Tartar Rolls', 8490)">
+    Sake Tartar Rolls
+  </button>
+
+  <button onclick="agregarPedido('Fuji Crunch Rolls', 8490)">
+    Fuji Crunch Rolls
+  </button>
+
+  <button onclick="agregarPedido('Triple Plaqueta', 8490)">
+    Triple Plaqueta
+  </button>
+
+  <button onclick="agregarPedido('Umami Rolls', 8490)">
+    Umami Rolls
+  </button>
+
+  <h2>Gohan</h2>
+
+  <input type="text" id="gohanPersonalizado" placeholder="Escribe el gohan">
+
+
+  <button onclick="agregarGohanPersonalizado()">
+    Agregar Gohan
+  </button>
+
+<h2>Sushiburger</h2>
+
+  <input type="text" id="SushiburgerPersonalizado" placeholder="Escribe la Sushiburger">
+
+
+  <button onclick="agregarSushiburgerPersonalizado()">
+    Agregar Sushiburger
+    </button>
+
+  <h2>Bebidas</h2>
+
+  <button onclick="agregarPedido('Coca Cola', 2990)">
+    Coca Cola
+  </button>
+
+  <button onclick="agregarPedido('Sprite', 2990)">
+    Sprite
+  </button>
+
+  <button onclick="agregarPedido('Fanta', 2990)">
+    Fanta
+  </button>
+
+   <h2>Observación</h2>
+
+  <input type="text" id="observacion" placeholder="Observación opcional"> 
+
+  <h2>Resumen pedido</h2>
+
+  <ul id="lista"></ul>
+
+  <h2 id="total">
+    Total: $0
+  </h2>
+
+  <button onclick="imprimirComanda()">
+    Imprimir
+  </button>
+
+  <button onclick="vaciarPedido()">
+    Vaciar Pedido
+  </button>
+
+  <button onclick="probar()">
+    Probar impresora
+  </button>
+
+  <script>
+
+    let pedido = [];
+
+    function agregarPedido(producto, precio){
+
+      let observacion = document.getElementById("observacion").value;
+
+      let item = producto;
+
+      if(observacion.trim() !== ""){
+        item += " | Obs: " + observacion;
+      }
+
+      pedido.push({
+        nombre: item,
+        precio: precio
+      });
+
+     renderizarPedido();
+      actualizarTotal();
+
+      document.getElementById("observacion").value = "";
+    }
+
+    function eliminarProducto(index){
+
+  pedido.splice(index, 1);
+
+  renderizarPedido();
+
+  actualizarTotal();
+}
+
+    function actualizarTotal(){
+
+  let subtotal = 0;
+
+  pedido.forEach(item => {
+    subtotal += item.precio;
+  });
+
+  let direccionData =
+    document.getElementById("direccion").value.split("|");
+
+  let delivery = parseInt(direccionData[1]);
+
+  let total = subtotal + delivery;
+
+  document.getElementById("total").innerText =
+    "Total: $" + total;
+}
+
+function renderizarPedido(){
+
+  let lista = document.getElementById("lista");
+
+  lista.innerHTML = "";
+
+  pedido.forEach((item, index) => {
+
+    lista.innerHTML += `
+      <li style="margin-bottom:10px;">
+        ${item.nombre} - $${item.precio}
+
+        <button
+          onclick="eliminarProducto(${index})"
+          style="
+            background:red;
+            margin-left:10px;
+            padding:5px 10px;
+            border:none;
+            border-radius:5px;
+            color:white;
+          ">
+          X
+        </button>
+      </li>
+    `;
+  });
+}
+
+    function agregarRollPersonalizado(){
+
+  let roll = document.getElementById("rollPersonalizado").value;
+
+  if(roll.trim() !== ""){
+
+    agregarPedido("Roll: " + roll, 5490);
+
+    document.getElementById("rollPersonalizado").value = "";
+  }
+}
+
+function agregarGohanPersonalizado(){
+
+  let gohan = document.getElementById("gohanPersonalizado").value;
+
+  if(gohan.trim() !== ""){
+
+    agregarPedido("Gohan: " + gohan, 7990);
+
+    document.getElementById("gohanPersonalizado").value = "";
+  }
+}
+
+function agregarSushiburgerPersonalizado(){
+
+  let sushiburger = document.getElementById("SushiburgerPersonalizado").value;
+
+  if(sushiburger.trim() !== ""){
+
+    agregarPedido("Sushiburger: " + sushiburger, 8900);
+
+    document.getElementById("SushiburgerPersonalizado").value = "";
+  }
+}
+    function vaciarPedido(){
+
+      pedido = [];
+
+      document.getElementById("lista").innerHTML = "";
+
+      actualizarTotal();
+    }
+
+    function imprimirComanda(){
+
+      let cliente = document.getElementById("cliente").value;
+
+      let telefono = document.getElementById("telefono").value;
+
+      let direccionData = document.getElementById("direccion").value.split("|");
+
+let direccion = direccionData[0];
+
+let direccionTexto =
+document.getElementById("direccionTexto").value;
+
+let palitos =
+document.getElementById("Palitos").value;
+
+let salsas =
+document.getElementById("Salsas").value;
+
+let observacionGeneral =
+document.getElementById("observacion").value;
+
+let horaEntrega =
+document.getElementById("horaEntrega").value;
+
+let metodoPago =
+document.getElementById("metodoPago").value;
+
+let delivery = parseInt(direccionData[1]);
+
+let subtotal = pedido.reduce((sum, item) => sum + item.precio, 0);
+
+let total = subtotal + delivery;
+
+      let texto = `
+ASIAN SUSHI
+
+Cliente: ${cliente}
+Teléfono: ${telefono}
+Dirección exacta: ${direccionTexto}
+Palitos: ${palitos}
+Salsas: ${salsas}
+----------------------
+PEDIDO
+${pedido.map(item =>
+item.nombre + " - $" + item.precio).join("\n")}
+----------------------
+OBSERVACIÓN:
+${observacionGeneral}
+-----------------------
+TOTAL: $${total}
+Método de pago: ${metodoPago}
+Horario: ${horaEntrega}
+-----------------------
+      `;
+
+      let ventana = window.open('', '', 'width=300,height=600');
+
+      ventana.document.write(`
+<html>
+<head>
+  <style>
+    body {
+      font-family: Arial;
+      font-size: 15px; /* 👈 TAMAÑO IMPRESION */
+      padding: 20px;
+    }
+
+    pre {
+      font-size: 15px; /* 👈 también por seguridad */
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <pre>${texto}</pre>
+
+`);
+      ventana.print();
+
+      ventana.close();
+    }
+
+    async function probar(){
+
+      try {
+
+        const impresoras = await qz.printers.find();
+
+        alert(impresoras);
+
+      } catch(error){
+
+        console.error(error);
+
+        alert("QZ no conectado");
+      }
+    }
+
+  </script>
+
+</body>
+
+</html>
