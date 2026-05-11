@@ -348,7 +348,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "TU_APIKEY",
+  apiKey: "AIzaSyDEAz2DKAOvHOZWCbrK1YEH-9rGHSRDTHY",
   authDomain: "asian-sushi-7095b.firebaseapp.com",
   projectId: "asian-sushi-7095b",
   storageBucket: "asian-sushi-7095b.firebasestorage.app",
@@ -378,7 +378,7 @@ async function guardarPedidoFirebase(datos) {
   }
 }
 
-function agregarPedido(producto, precio){
+window.agregarPedido = function(producto, precio){
 
   let observacion = document.getElementById("observacion").value;
 
@@ -400,7 +400,7 @@ function agregarPedido(producto, precio){
   document.getElementById("observacion").value = "";
 }
 
-function eliminarProducto(index){
+window.eliminarProducto = function(index){
 
   pedido.splice(index, 1);
 
@@ -409,7 +409,7 @@ function eliminarProducto(index){
   actualizarTotal();
 }
 
-function actualizarTotal(){
+window.actualizarTotal = function(){
 
   let subtotal = 0;
 
@@ -428,7 +428,7 @@ function actualizarTotal(){
     "Total: $" + total;
 }
 
-function renderizarPedido(){
+window.renderizarPedido = function(){
 
   let lista = document.getElementById("lista");
 
@@ -457,7 +457,7 @@ function renderizarPedido(){
   });
 }
 
-function agregarRollPersonalizado(){
+window.agregarRollPersonalizado = function(){
 
   let roll = document.getElementById("rollPersonalizado").value;
 
@@ -469,7 +469,7 @@ function agregarRollPersonalizado(){
   }
 }
 
-function agregarGohanPersonalizado(){
+window.agregarGohanPersonalizado = function(){
 
   let gohan = document.getElementById("gohanPersonalizado").value;
 
@@ -481,7 +481,7 @@ function agregarGohanPersonalizado(){
   }
 }
 
-function agregarSushiburgerPersonalizado(){
+window.agregarSushiburgerPersonalizado = function(){
 
   let sushiburger =
     document.getElementById("SushiburgerPersonalizado").value;
@@ -494,7 +494,7 @@ function agregarSushiburgerPersonalizado(){
   }
 }
 
-function vaciarPedido(){
+window.vaciarPedido = function(){
 
   pedido = [];
 
