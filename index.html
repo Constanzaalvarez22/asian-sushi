@@ -130,9 +130,9 @@ placeholder="Escribe la dirección exacta">
     Tabla 60
   </button>
 
-  <button onclick="agregarPedido('Tabla Familiar 80', 36990
-    Tabla 80
-  </button>
+  <button onclick="agregarPedido('Tabla Familiar 80', 36990)">
+  Tabla 80
+</button>
 
   <h2>Tablas Especiales y Veggie</h2>
 
@@ -337,32 +337,70 @@ placeholder="Escribe la dirección exacta">
     Probar impresora
   </button>
 
-  <script>
+<script type="module">
 
-    let pedido = [];
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-    function agregarPedido(producto, precio){
+import {
+  getFirestore,
+  collection,
+  addDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-      let observacion = document.getElementById("observacion").value;
+const firebaseConfig = {
+  apiKey: "TU_APIKEY",
+  authDomain: "asian-sushi-7095b.firebaseapp.com",
+  projectId: "asian-sushi-7095b",
+  storageBucket: "asian-sushi-7095b.firebasestorage.app",
+  messagingSenderId: "863718936530",
+  appId: "1:863718936530:web:c518f95d029d1245c2020b"
+};
 
-      let item = producto;
+const app = initializeApp(firebaseConfig);
 
-      if(observacion.trim() !== ""){
-        item += " | Obs: " + observacion;
-      }
+const db = getFirestore(app);
 
-      pedido.push({
-        nombre: item,
-        precio: precio
-      });
+let pedido = [];
 
-     renderizarPedido();
-      actualizarTotal();
+async function guardarPedidoFirebase(datos) {
 
-      document.getElementById("observacion").value = "";
-    }
+  try {
 
-    function eliminarProducto(index){
+    await addDoc(collection(db, "pedidos"), datos);
+
+    alert("Pedido enviado al local");
+
+  } catch(error) {
+
+    console.error(error);
+
+    alert("Error enviando pedido");
+  }
+}
+
+function agregarPedido(producto, precio){
+
+  let observacion = document.getElementById("observacion").value;
+
+  let item = producto;
+
+  if(observacion.trim() !== ""){
+    item += " | Obs: " + observacion;
+  }
+
+  pedido.push({
+    nombre: item,
+    precio: precio
+  });
+
+  renderizarPedido();
+
+  actualizarTotal();
+
+  document.getElementById("observacion").value = "";
+}
+
+function eliminarProducto(index){
 
   pedido.splice(index, 1);
 
@@ -371,7 +409,7 @@ placeholder="Escribe la dirección exacta">
   actualizarTotal();
 }
 
-    function actualizarTotal(){
+function actualizarTotal(){
 
   let subtotal = 0;
 
@@ -419,7 +457,7 @@ function renderizarPedido(){
   });
 }
 
-    function agregarRollPersonalizado(){
+function agregarRollPersonalizado(){
 
   let roll = document.getElementById("rollPersonalizado").value;
 
@@ -445,7 +483,8 @@ function agregarGohanPersonalizado(){
 
 function agregarSushiburgerPersonalizado(){
 
-  let sushiburger = document.getElementById("SushiburgerPersonalizado").value;
+  let sushiburger =
+    document.getElementById("SushiburgerPersonalizado").value;
 
   if(sushiburger.trim() !== ""){
 
@@ -454,115 +493,156 @@ function agregarSushiburgerPersonalizado(){
     document.getElementById("SushiburgerPersonalizado").value = "";
   }
 }
-    function vaciarPedido(){
 
-      pedido = [];
+function vaciarPedido(){
 
-      document.getElementById("lista").innerHTML = "";
+  pedido = [];
 
-      actualizarTotal();
-    }
+  document.getElementById("lista").innerHTML = "";
 
-    function imprimirComanda(){
+  actualizarTotal();
+}
 
-      let cliente = document.getElementById("cliente").value;
+window.imprimirComanda = async function(){
 
-      let telefono = document.getElementById("telefono").value;
+  let cliente = document.getElementById("cliente").value;
 
-      let direccionData = document.getElementById("direccion").value.split("|");
+  let telefono = document.getElementById("telefono").value;
 
-let direccion = direccionData[0];
+  let direccionData =
+    document.getElementById("direccion").value.split("|");
 
-let direccionTexto =
-document.getElementById("direccionTexto").value;
+  let direccionTexto =
+    document.getElementById("direccionTexto").value;
 
-let palitos =
-document.getElementById("Palitos").value;
+  let palitos =
+    document.getElementById("Palitos").value;
 
-let salsas =
-document.getElementById("Salsas").value;
+  let salsas =
+    document.getElementById("Salsas").value;
 
-let observacionGeneral =
-document.getElementById("observacion").value;
+  let observacionGeneral =
+    document.getElementById("observacion").value;
 
-let horaEntrega =
-document.getElementById("horaEntrega").value;
+  let horaEntrega =
+    document.getElementById("horaEntrega").value;
 
-let metodoPago =
-document.getElementById("metodoPago").value;
+  let metodoPago =
+    document.getElementById("metodoPago").value;
 
-let delivery = parseInt(direccionData[1]);
+  let delivery = parseInt(direccionData[1]);
 
-let subtotal = pedido.reduce((sum, item) => sum + item.precio, 0);
+  let subtotal =
+    pedido.reduce((sum, item) => sum + item.precio, 0);
 
-let total = subtotal + delivery;
+  let total = subtotal + delivery;
 
-      let texto = `
+  await guardarPedidoFirebase({
+    cliente,
+    telefono,
+    direccionTexto,
+    palitos,
+    salsas,
+    observacionGeneral,
+    metodoPago,
+    horaEntrega,
+    total,
+    pedido,
+    fecha: new Date()
+  });
+
+  let texto = `
 ASIAN SUSHI
 
 Cliente: ${cliente}
 Teléfono: ${telefono}
-Dirección exacta: ${direccionTexto}
+
+Dirección:
+${direccionTexto}
+
 Palitos: ${palitos}
 Salsas: ${salsas}
+
 ----------------------
+
 PEDIDO
+
 ${pedido.map(item =>
 item.nombre + " - $" + item.precio).join("\n")}
+
 ----------------------
+
 OBSERVACIÓN:
 ${observacionGeneral}
------------------------
+
+----------------------
+
 TOTAL: $${total}
-Método de pago: ${metodoPago}
-Horario: ${horaEntrega}
------------------------
-      `;
 
-      let ventana = window.open('', '', 'width=300,height=600');
+Método pago:
+${metodoPago}
 
-      ventana.document.write(`
+Horario:
+${horaEntrega}
+
+----------------------
+`;
+
+  let ventana =
+    window.open('', '', 'width=300,height=600');
+
+  ventana.document.write(`
 <html>
 <head>
-  <style>
-    body {
-      font-family: Arial;
-      font-size: 15px; /* 👈 TAMAÑO IMPRESION */
-      padding: 20px;
-    }
+<style>
 
-    pre {
-      font-size: 15px; /* 👈 también por seguridad */
-      white-space: pre-wrap;
-    }
-  </style>
+body{
+  font-family: Arial;
+  font-size: 15px;
+  padding: 20px;
+}
+
+pre{
+  white-space: pre-wrap;
+  font-size: 15px;
+}
+
+</style>
 </head>
+
 <body>
-  <pre>${texto}</pre>
 
+<pre>${texto}</pre>
+
+</body>
+</html>
 `);
-      ventana.print();
 
-      ventana.close();
-    }
+  ventana.print();
 
-    async function probar(){
+  ventana.close();
+}
 
-      try {
+window.probar = async function(){
 
-        const impresoras = await qz.printers.find();
+  try {
 
-        alert(impresoras);
+    const impresoras = await qz.printers.find();
 
-      } catch(error){
+    alert(impresoras);
 
-        console.error(error);
+  } catch(error){
 
-        alert("QZ no conectado");
-      }
-    }
+    console.error(error);
 
-  </script>
+    alert("QZ no conectado");
+  }
+}
+
+window.vaciarPedido = vaciarPedido;
+
+</script>
+  
 
 </body>
 
