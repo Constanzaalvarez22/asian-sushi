@@ -507,7 +507,7 @@ TOTAL: $${totalFinal}
 `;
 
   try {
-    const config = qz.configs.create("impresora CAJA");
+    const config = qz.configs.create("DASIANSUSHI-001")
     await qz.print(config, [texto]);
   } catch (err) {
     console.log("Error impresión:", err);
