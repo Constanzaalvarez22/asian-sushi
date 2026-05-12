@@ -632,7 +632,11 @@ window.probar = async function(){
   }
 }
 
-window.vaciarPedido = vaciarPedido;
+window.vaciarPedido = function () {
+  pedido = [];
+  document.getElementById("lista").innerHTML = "";
+  actualizarTotal();
+};
 
 const contenedorPedidos = document.createElement("div");
 
