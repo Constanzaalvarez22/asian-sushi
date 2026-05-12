@@ -640,7 +640,52 @@ window.probar = async function(){
 }
 
 window.vaciarPedido = vaciarPedido;
+import {
+  onSnapshot,
+  query,
+  orderBy
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+const contenedorPedidos = document.createElement("div");
+
+contenedorPedidos.innerHTML = `
+  <h2>Pedidos en tiempo real</h2>
+  <div id="pedidosTiempoReal"></div>
+`;
+
+document.body.appendChild(contenorPedidos);
+
+const pedidosDiv =
+  document.getElementById("pedidosTiempoReal");
+
+const q = query(
+  collection(db, "pedidos"),
+  orderBy("fecha", "desc")
+);
+
+onSnapshot(q, (snapshot) => {
+
+  pedidosDiv.innerHTML = "";
+
+  snapshot.forEach((doc) => {
+
+    const data = doc.data();
+
+    pedidosDiv.innerHTML += `
+      <div style="
+        background:white;
+        padding:15px;
+        margin:10px 0;
+        border-radius:10px;
+      ">
+        <b>${data.cliente}</b><br>
+        ${data.telefono}<br>
+        ${data.direccionTexto}<br>
+        Total: $${data.total}
+      </div>
+    `;
+  });
+});
 </script>
   
 
