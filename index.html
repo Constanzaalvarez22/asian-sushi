@@ -430,7 +430,7 @@ HORA: ${data.horaEntrega}
       await qz.websocket.connect();
     }
 
-    const config = qz.configs.create("impresora CAJA");
+    const config = qz.configs.create("DASIANSUSHI-001");
 
     await qz.print(config, [texto]);
 
