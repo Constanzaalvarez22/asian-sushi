@@ -601,7 +601,7 @@ ${horaEntrega}
 `;
 try {
 
-  const config = qz.configs.create("impresora CAJA")
+  const config = qz.configs.create("impresora CAJA");
 
   await qz.print(config, [texto]);
 
@@ -612,6 +612,8 @@ try {
   console.error(error);
 
   alert("Error imprimiendo");
+}
+
 }
 
 window.probar = async function(){
