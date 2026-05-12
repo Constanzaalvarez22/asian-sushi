@@ -344,7 +344,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
   getFirestore,
   collection,
-  addDoc
+  addDoc,
+  onSnapshot,
+  query,
+  orderBy,
+  limit
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -359,6 +363,14 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 const db = getFirestore(app);
+qz.websocket.connect()
+.then(() => {
+  console.log("QZ conectado");
+})
+.catch(error => {
+  console.error(error);
+  alert("QZ Tray no conectado");
+});
 
 let pedido = [];
 
@@ -548,7 +560,7 @@ window.imprimirComanda = async function(){
     horaEntrega,
     total,
     pedido,
-    fecha: new Date()
+    fecha: Date.now()
   });
 
   let texto = `
@@ -640,11 +652,6 @@ window.probar = async function(){
 }
 
 window.vaciarPedido = vaciarPedido;
-import {
-  onSnapshot,
-  query,
-  orderBy
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const contenedorPedidos = document.createElement("div");
 
@@ -653,7 +660,7 @@ contenedorPedidos.innerHTML = `
   <div id="pedidosTiempoReal"></div>
 `;
 
-document.body.appendChild(contenorPedidos);
+document.body.appendChild(contenedorPedidos);
 
 const pedidosDiv =
   document.getElementById("pedidosTiempoReal");
