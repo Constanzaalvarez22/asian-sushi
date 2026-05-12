@@ -363,13 +363,36 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 const db = getFirestore(app);
-qz.websocket.connect()
-.then(() => {
-  console.log("QZ conectado");
-})
-.catch(error => {
-  console.error(error);
-  alert("QZ Tray no conectado");
+window.addEventListener("load", async () => {
+
+  try {
+
+    if (typeof qz === "undefined") {
+      alert("QZ Tray no está cargado o instalado");
+      return;
+    }
+
+    qz.security.setCertificatePromise(function(resolve, reject) {
+      resolve();
+    });
+
+    qz.security.setSignaturePromise(function(toSign) {
+      return function(resolve, reject) {
+        resolve();
+      };
+    });
+
+    await qz.websocket.connect();
+
+    console.log("QZ conectado correctamente");
+
+  } catch (error) {
+
+    console.error("Error QZ:", error);
+
+    alert("Error con QZ Tray: revisa que esté abierto");
+  }
+
 });
 
 let pedido = [];
