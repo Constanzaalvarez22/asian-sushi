@@ -599,40 +599,19 @@ ${horaEntrega}
 
 ----------------------
 `;
+try {
 
-  let ventana =
-    window.open('', '', 'width=300,height=600');
+  const config = qz.configs.create("impresora CAJA")
 
-  ventana.document.write(`
-<html>
-<head>
-<style>
+  await qz.print(config, [texto]);
 
-body{
-  font-family: Arial;
-  font-size: 15px;
-  padding: 20px;
-}
+  alert("Impreso correctamente");
 
-pre{
-  white-space: pre-wrap;
-  font-size: 15px;
-}
+} catch(error){
 
-</style>
-</head>
+  console.error(error);
 
-<body>
-
-<pre>${texto}</pre>
-
-</body>
-</html>
-`);
-
-  ventana.print();
-
-  ventana.close();
+  alert("Error imprimiendo");
 }
 
 window.probar = async function(){
