@@ -336,19 +336,16 @@ placeholder="Escribe la dirección exacta">
   <button onclick="probar()">
     Probar impresora
   </button>
-
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
 import {
   getFirestore,
   collection,
   addDoc,
   onSnapshot,
   query,
-  orderBy,
-  limit
+  orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -361,348 +358,198 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-
 const db = getFirestore(app);
-window.addEventListener("load", async () => {
-
-  try {
-
-    if (typeof qz === "undefined") {
-      alert("QZ Tray no está cargado o instalado");
-      return;
-    }
-
-    qz.security.setCertificatePromise(function(resolve, reject) {
-      resolve();
-    });
-
-    qz.security.setSignaturePromise(function(toSign) {
-      return function(resolve, reject) {
-        resolve();
-      };
-    });
-
-    await qz.websocket.connect();
-
-    console.log("QZ conectado correctamente");
-
-  } catch (error) {
-
-    console.error("Error QZ:", error);
-
-    alert("Error con QZ Tray: revisa que esté abierto");
-  }
-
-});
 
 let pedido = [];
+const impresos = new Set();
 
-async function guardarPedidoFirebase(datos) {
+window.addEventListener("load", async () => {
+  try {
+    if (typeof qz !== "undefined") {
+      qz.security.setCertificatePromise(resolve => resolve());
+      qz.security.setSignaturePromise(toSign => resolve => resolve());
+      await qz.websocket.connect();
+    }
+  } catch (error) {
+    console.log("Error QZ:", error);
+  }
+});
+
+async function guardarPedidoFirebase(data) {
+  await addDoc(collection(db, "pedidos"), data);
+}
+
+window.imprimirAutomatico = async function (data) {
+
+  const texto = `
+ASIAN SUSHI
+
+CLIENTE: ${data.cliente}
+TEL: ${data.telefono}
+
+DIRECCIÓN:
+${data.direccionTexto}
+
+----------------------
+
+PEDIDO:
+${data.pedido.map(p => p.nombre + " - $" + p.precio).join("\n")}
+
+----------------------
+
+TOTAL: $${data.total}
+PAGO: ${data.metodoPago}
+HORA: ${data.horaEntrega}
+
+----------------------
+`;
 
   try {
-
-    await addDoc(collection(db, "pedidos"), datos);
-
-    alert("Pedido enviado al local");
-
-  } catch(error) {
-
-    console.error(error);
-
-    alert("Error enviando pedido");
+    const config = qz.configs.create("impresora CAJA");
+    await qz.print(config, [texto]);
+  } catch (err) {
+    console.log("Error impresión:", err);
   }
-}
+};
 
-window.agregarPedido = function(producto, precio){
+window.agregarPedido = function (producto, precio) {
 
-  let observacion = document.getElementById("observacion").value;
-
+  const obs = document.getElementById("observacion").value;
   let item = producto;
 
-  if(observacion.trim() !== ""){
-    item += " | Obs: " + observacion;
+  if (obs.trim() !== "") {
+    item += " | Obs: " + obs;
   }
 
-  pedido.push({
-    nombre: item,
-    precio: precio
-  });
+  pedido.push({ nombre: item, precio });
 
-  renderizarPedido();
-
-  actualizarTotal();
+  render();
+  total();
 
   document.getElementById("observacion").value = "";
-}
+};
 
-window.eliminarProducto = function(index){
-
-  pedido.splice(index, 1);
-
-  renderizarPedido();
-
-  actualizarTotal();
-}
-
-window.actualizarTotal = function(){
-
-  let subtotal = 0;
-
-  pedido.forEach(item => {
-    subtotal += item.precio;
-  });
-
-  let direccionData =
-    document.getElementById("direccion").value.split("|");
-
-  let delivery = parseInt(direccionData[1]);
-
-  let total = subtotal + delivery;
-
-  document.getElementById("total").innerText =
-    "Total: $" + total;
-}
-
-window.renderizarPedido = function(){
-
-  let lista = document.getElementById("lista");
-
+function render() {
+  const lista = document.getElementById("lista");
   lista.innerHTML = "";
 
-  pedido.forEach((item, index) => {
-
+  pedido.forEach((item, i) => {
     lista.innerHTML += `
-      <li style="margin-bottom:10px;">
+      <li>
         ${item.nombre} - $${item.precio}
-
-        <button
-          onclick="eliminarProducto(${index})"
-          style="
-            background:red;
-            margin-left:10px;
-            padding:5px 10px;
-            border:none;
-            border-radius:5px;
-            color:white;
-          ">
-          X
-        </button>
+        <button onclick="eliminar(${i})">X</button>
       </li>
     `;
   });
 }
 
-window.agregarRollPersonalizado = function(){
+window.eliminar = function (i) {
+  pedido.splice(i, 1);
+  render();
+  total();
+};
 
-  let roll = document.getElementById("rollPersonalizado").value;
+function total() {
 
-  if(roll.trim() !== ""){
+  let subtotal = pedido.reduce((a, b) => a + b.precio, 0);
 
-    agregarPedido("Roll: " + roll, 5490);
+  let direccion = document.getElementById("direccion").value.split("|");
+  let delivery = parseInt(direccion[1]);
 
-    document.getElementById("rollPersonalizado").value = "";
-  }
-}
-
-window.agregarGohanPersonalizado = function(){
-
-  let gohan = document.getElementById("gohanPersonalizado").value;
-
-  if(gohan.trim() !== ""){
-
-    agregarPedido("Gohan: " + gohan, 7990);
-
-    document.getElementById("gohanPersonalizado").value = "";
-  }
-}
-
-window.agregarSushiburgerPersonalizado = function(){
-
-  let sushiburger =
-    document.getElementById("SushiburgerPersonalizado").value;
-
-  if(sushiburger.trim() !== ""){
-
-    agregarPedido("Sushiburger: " + sushiburger, 8900);
-
-    document.getElementById("SushiburgerPersonalizado").value = "";
-  }
-}
-
-window.vaciarPedido = function(){
-
-  pedido = [];
-
-  document.getElementById("lista").innerHTML = "";
-
-  actualizarTotal();
-}
-
-window.imprimirComanda = async function(){
-
-  let cliente = document.getElementById("cliente").value;
-
-  let telefono = document.getElementById("telefono").value;
-
-  let direccionData =
-    document.getElementById("direccion").value.split("|");
-
-  let direccionTexto =
-    document.getElementById("direccionTexto").value;
-
-  let palitos =
-    document.getElementById("Palitos").value;
-
-  let salsas =
-    document.getElementById("Salsas").value;
-
-  let observacionGeneral =
-    document.getElementById("observacion").value;
-
-  let horaEntrega =
-    document.getElementById("horaEntrega").value;
-
-  let metodoPago =
-    document.getElementById("metodoPago").value;
-
-  let delivery = parseInt(direccionData[1]);
-
-  let subtotal =
-    pedido.reduce((sum, item) => sum + item.precio, 0);
-
-  let total = subtotal + delivery;
-
-  await guardarPedidoFirebase({
-    cliente,
-    telefono,
-    direccionTexto,
-    palitos,
-    salsas,
-    observacionGeneral,
-    metodoPago,
-    horaEntrega,
-    total,
-    pedido,
-    fecha: Date.now()
-  });
-
-  let texto = `
-ASIAN SUSHI
-
-Cliente: ${cliente}
-Teléfono: ${telefono}
-
-Dirección:
-${direccionTexto}
-
-Palitos: ${palitos}
-Salsas: ${salsas}
-
-----------------------
-
-PEDIDO
-
-${pedido.map(item =>
-item.nombre + " - $" + item.precio).join("\n")}
-
-----------------------
-
-OBSERVACIÓN:
-${observacionGeneral}
-
-----------------------
-
-TOTAL: $${total}
-
-Método pago:
-${metodoPago}
-
-Horario:
-${horaEntrega}
-
-----------------------
-`;
-try {
-
-  const config = qz.configs.create("impresora CAJA");
-
-  await qz.print(config, [texto]);
-
-  alert("Impreso correctamente");
-
-} catch(error){
-
-  console.error(error);
-
-  alert("Error imprimiendo");
-}
-
-}
-
-window.probar = async function(){
-
-  try {
-
-    const impresoras = await qz.printers.find();
-
-    alert(impresoras);
-
-  } catch(error){
-
-    console.error(error);
-
-    alert("QZ no conectado");
-  }
+  document.getElementById("total").innerText =
+    "Total: $" + (subtotal + delivery);
 }
 
 window.vaciarPedido = function () {
   pedido = [];
-  document.getElementById("lista").innerHTML = "";
-  actualizarTotal();
+  render();
+  total();
 };
 
-const contenedorPedidos = document.createElement("div");
+window.imprimirComanda = async function () {
 
-contenedorPedidos.innerHTML = `
-  <h2>Pedidos en tiempo real</h2>
-  <div id="pedidosTiempoReal"></div>
+  const cliente = document.getElementById("cliente").value;
+  const telefono = document.getElementById("telefono").value;
+  const direccionTexto = document.getElementById("direccionTexto").value;
+  const metodoPago = document.getElementById("metodoPago").value;
+  const horaEntrega = document.getElementById("horaEntrega").value;
+
+  const subtotal = pedido.reduce((a, b) => a + b.precio, 0);
+
+  const direccion = document.getElementById("direccion").value.split("|");
+  const delivery = parseInt(direccion[1]);
+
+  const totalFinal = subtotal + delivery;
+
+  const data = {
+    cliente,
+    telefono,
+    direccionTexto,
+    metodoPago,
+    horaEntrega,
+    pedido,
+    total: totalFinal,
+    fecha: Date.now()
+  };
+
+  await guardarPedidoFirebase(data);
+
+  const texto = `
+ASIAN SUSHI
+
+CLIENTE: ${cliente}
+TEL: ${telefono}
+
+PEDIDO:
+${pedido.map(i => i.nombre + " - $" + i.precio).join("\n")}
+
+TOTAL: $${totalFinal}
 `;
 
-document.body.appendChild(contenedorPedidos);
+  try {
+    const config = qz.configs.create("impresora CAJA");
+    await qz.print(config, [texto]);
+  } catch (err) {
+    console.log("Error impresión:", err);
+  }
+};
 
-const pedidosDiv =
-  document.getElementById("pedidosTiempoReal");
-
-const q = query(
-  collection(db, "pedidos"),
-  orderBy("fecha", "desc")
-);
+const q = query(collection(db, "pedidos"), orderBy("fecha", "desc"));
 
 onSnapshot(q, (snapshot) => {
 
-  pedidosDiv.innerHTML = "";
+  const div = document.getElementById("pedidosTiempoReal");
+  if (!div) return;
 
-  snapshot.forEach((doc) => {
+  div.innerHTML = "";
 
+  snapshot.forEach(doc => {
     const data = doc.data();
 
-    pedidosDiv.innerHTML += `
-      <div style="
-        background:white;
-        padding:15px;
-        margin:10px 0;
-        border-radius:10px;
-      ">
+    div.innerHTML += `
+      <div style="background:white;padding:10px;margin:10px;">
         <b>${data.cliente}</b><br>
         ${data.telefono}<br>
-        ${data.direccionTexto}<br>
         Total: $${data.total}
       </div>
     `;
   });
+
+  snapshot.docChanges().forEach(change => {
+
+    if (change.type === "added") {
+
+      const id = change.doc.id;
+
+      if (!impresos.has(id)) {
+        impresos.add(id);
+        imprimirAutomatico(change.doc.data());
+      }
+    }
+  });
 });
+
 </script>
-  
 
 </body>
 
