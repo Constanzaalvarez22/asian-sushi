@@ -336,6 +336,7 @@ placeholder="Escribe la dirección exacta">
   <button onclick="probar()">
     Probar impresora
   </button>
+
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -365,18 +366,37 @@ const impresos = new Set();
 
 window.addEventListener("load", async () => {
   try {
-    if (typeof qz !== "undefined") {
-      qz.security.setCertificatePromise(resolve => resolve());
-      qz.security.setSignaturePromise(toSign => resolve => resolve());
-      await qz.websocket.connect();
+
+    if (typeof qz === "undefined") {
+      console.log("QZ no cargado");
+      return;
     }
+
+    qz.security.setCertificatePromise(function (resolve) {
+      resolve();
+    });
+
+    qz.security.setSignaturePromise(function (toSign) {
+      return function (resolve) {
+        resolve();
+      };
+    });
+
+    await qz.websocket.connect();
+
+    console.log("QZ conectado");
+
   } catch (error) {
     console.log("Error QZ:", error);
   }
 });
 
 async function guardarPedidoFirebase(data) {
-  await addDoc(collection(db, "pedidos"), data);
+  try {
+    await addDoc(collection(db, "pedidos"), data);
+  } catch (e) {
+    console.log("Firebase error:", e);
+  }
 }
 
 window.imprimirAutomatico = async function (data) {
@@ -405,10 +425,19 @@ HORA: ${data.horaEntrega}
 `;
 
   try {
+
+    if (!qz.websocket.isActive()) {
+      await qz.websocket.connect();
+    }
+
     const config = qz.configs.create("impresora CAJA");
+
     await qz.print(config, [texto]);
+
+    console.log("IMPRESO OK");
+
   } catch (err) {
-    console.log("Error impresión:", err);
+    console.log("ERROR IMPRESIÓN:", err);
   }
 };
 
@@ -424,7 +453,7 @@ window.agregarPedido = function (producto, precio) {
   pedido.push({ nombre: item, precio });
 
   render();
-  total();
+  calcularTotal();
 
   document.getElementById("observacion").value = "";
 };
@@ -446,15 +475,15 @@ function render() {
 window.eliminar = function (i) {
   pedido.splice(i, 1);
   render();
-  total();
+  calcularTotal();
 };
 
-function total() {
+function calcularTotal() {
 
   let subtotal = pedido.reduce((a, b) => a + b.precio, 0);
 
   let direccion = document.getElementById("direccion").value.split("|");
-  let delivery = parseInt(direccion[1]);
+  let delivery = parseInt(direccion[1] || 0);
 
   document.getElementById("total").innerText =
     "Total: $" + (subtotal + delivery);
@@ -463,7 +492,7 @@ function total() {
 window.vaciarPedido = function () {
   pedido = [];
   render();
-  total();
+  calcularTotal();
 };
 
 window.imprimirComanda = async function () {
@@ -474,12 +503,12 @@ window.imprimirComanda = async function () {
   const metodoPago = document.getElementById("metodoPago").value;
   const horaEntrega = document.getElementById("horaEntrega").value;
 
-  const subtotal = pedido.reduce((a, b) => a + b.precio, 0);
+  let subtotal = pedido.reduce((a, b) => a + b.precio, 0);
 
-  const direccion = document.getElementById("direccion").value.split("|");
-  const delivery = parseInt(direccion[1]);
+  let direccion = document.getElementById("direccion").value.split("|");
+  let delivery = parseInt(direccion[1] || 0);
 
-  const totalFinal = subtotal + delivery;
+  let totalFinal = subtotal + delivery;
 
   const data = {
     cliente,
@@ -507,10 +536,20 @@ TOTAL: $${totalFinal}
 `;
 
   try {
-    const config = qz.configs.create("DASIANSUSHI-001")
+
+    if (!qz.websocket.isActive()) {
+      await qz.websocket.connect();
+    }
+
+    const config = qz.configs.create("impresora CAJA");
+
     await qz.print(config, [texto]);
+
+    alert("Impreso OK");
+
   } catch (err) {
-    console.log("Error impresión:", err);
+    console.log("ERROR:", err);
+    alert("Error impresión");
   }
 };
 
@@ -518,8 +557,13 @@ const q = query(collection(db, "pedidos"), orderBy("fecha", "desc"));
 
 onSnapshot(q, (snapshot) => {
 
-  const div = document.getElementById("pedidosTiempoReal");
-  if (!div) return;
+  let div = document.getElementById("pedidosTiempoReal");
+
+  if (!div) {
+    div = document.createElement("div");
+    div.id = "pedidosTiempoReal";
+    document.body.appendChild(div);
+  }
 
   div.innerHTML = "";
 
