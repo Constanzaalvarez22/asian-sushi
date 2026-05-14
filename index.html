@@ -5,47 +5,52 @@
   <meta charset="UTF-8">
   <title>Asian Sushi - Comandas</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/qz-tray/qz-tray.js"></script>
-
   <style>
+
     body{
       font-family: Arial;
       padding: 20px;
       background: #f5f5f5;
     }
 
-    h1{ color:#111; }
-    h2{ margin-top:30px; }
+    h1{
+      color: #111;
+    }
+
+    h2{
+      margin-top: 30px;
+    }
 
     button{
-      margin:5px;
-      padding:10px 15px;
-      cursor:pointer;
-      border:none;
-      border-radius:8px;
-      background:black;
-      color:white;
+      margin: 5px;
+      padding: 10px 15px;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background: black;
+      color: white;
     }
 
     input, select{
-      margin:5px;
-      padding:10px;
-      width:260px;
-      border-radius:8px;
-      border:1px solid #ccc;
+      margin: 5px;
+      padding: 10px;
+      width: 260px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
     }
 
     #lista{
-      margin-top:20px;
-      background:white;
-      padding:15px;
-      border-radius:10px;
+      margin-top: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
     }
 
     #total{
-      color:green;
-      font-size:28px;
+      color: green;
+      font-size: 28px;
     }
+
   </style>
 </head>
 
@@ -53,62 +58,127 @@
 
 <h1>Asian Sushi - Comandas</h1>
 
-<input id="cliente" placeholder="Nombre cliente">
-<input id="telefono" placeholder="Teléfono">
+<input type="text" id="cliente" placeholder="Nombre cliente">
 
-<label>Hora entrega</label>
-<input type="time" id="horaEntrega">
+<input type="text" id="telefono" placeholder="Número teléfono">
 
-<label>Método pago</label>
-<select id="metodoPago">
-  <option>Efectivo</option>
-  <option>Transferencia</option>
-  <option>Tarjeta</option>
+<input type="text" id="Palitos" placeholder="Cantidad de palitos">
+
+<input type="text" id="Salsas" placeholder="Salsas">
+
+<select id="direccion" onchange="actualizarTotal()">
+
+  <option value="Retiro en local|0">
+    Retiro en local - $0
+  </option>
+
+  <option value="Ovalle|2500">
+    Delivery Ovalle - $2.500
+  </option>
+
+  <option value="Extremo Norte|3000">
+    Delivery Extremo Norte - $3.000
+  </option>
+
+  <option value="Extremo Sur|4000">
+    Delivery Extremo Sur - $4.000
+  </option>
+
 </select>
 
-<input id="direccionTexto" placeholder="Dirección exacta">
+<br><br>
 
-<select id="direccion" onchange="calcularTotal()">
-  <option value="Retiro|0">Retiro - $0</option>
-  <option value="Ovalle|2500">Ovalle - $2.500</option>
-  <option value="Extremo Norte|3000">Extremo Norte - $3.000</option>
-  <option value="Extremo Sur|4000">Extremo Sur - $4.000</option>
-</select>
+<input
+type="text"
+id="direccionTexto"
+placeholder="Escribe la dirección exacta">
 
-<h2>Productos</h2>
+<h2>Tablas</h2>
 
-<button onclick="agregarPedido('Tabla 20', 9990)">Tabla 20</button>
-<button onclick="agregarPedido('Tabla 40', 18990)">Tabla 40</button>
-<button onclick="agregarPedido('Ceviche Roll', 9990)">Ceviche Roll</button>
-<button onclick="agregarPedido('Coca Cola', 2990)">Coca Cola</button>
+<button onclick="agregarPedido('Tabla Individual 20', 9990)">
+  Tabla 20
+</button>
+
+<button onclick="agregarPedido('Tabla Familiar 40', 18990)">
+  Tabla 40
+</button>
+
+<button onclick="agregarPedido('Tabla Familiar 60', 27990)">
+  Tabla 60
+</button>
+
+<button onclick="agregarPedido('Tabla Familiar 80', 36490)">
+  Tabla 80
+</button>
+
+<h2>Entrantes</h2>
+
+<button onclick="agregarPedido('Gyosas mixtas', 4990)">
+  Gyosas mixtas
+</button>
+
+<button onclick="agregarPedido('Camarón rebosado', 5490)">
+  Camarón rebosado
+</button>
+
+<button onclick="agregarPedido('Nigiri sake', 4690)">
+  Nigiri sake
+</button>
+
+<h2>Roll Personalizado</h2>
+
+<input
+type="text"
+id="rollPersonalizado"
+placeholder="Escribe el roll">
+
+<button onclick="agregarRollPersonalizado()">
+  Agregar Roll
+</button>
 
 <h2>Observación</h2>
-<input id="observacion" placeholder="Observación">
 
-<h2>Resumen</h2>
+<input
+type="text"
+id="observacion"
+placeholder="Observación opcional">
+
+<h2>Resumen pedido</h2>
+
 <ul id="lista"></ul>
 
-<h2 id="total">Total: $0</h2>
+<h2 id="total">
+  Total: $0
+</h2>
 
-<button onclick="imprimirComanda()">Imprimir</button>
-<button onclick="vaciarPedido()">Vaciar</button>
-<button onclick="probar()">Probar impresora</button>
+<button onclick="enviarPedido()">
+  Enviar Pedido
+</button>
+
+<button onclick="vaciarPedido()">
+  Vaciar Pedido
+</button>
 
 <script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+// FIREBASE
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
 import {
   getFirestore,
   collection,
-  addDoc,
-  query,
-  orderBy,
-  onSnapshot
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  addDoc
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* FIREBASE */
+
+// CONFIG FIREBASE
+
 const firebaseConfig = {
-  apiKey: "AIzaSyDEAz2DKAOvHOZWCbrK1YEH-9rGHSRDTHY",
+
+ apiKey: "AIzaSyDEAz2DKAOvHOZWCbrK1YEH-9rGHSRDTHY",
   authDomain: "asian-sushi-7095b.firebaseapp.com",
   projectId: "asian-sushi-7095b",
   storageBucket: "asian-sushi-7095b.firebasestorage.app",
@@ -116,203 +186,228 @@ const firebaseConfig = {
   appId: "1:863718936530:web:c518f95d029d1245c2020b"
 };
 
+
+// INICIAR FIREBASE
+
 const app = initializeApp(firebaseConfig);
+
 const db = getFirestore(app);
 
-/* VARIABLES */
-let pedido = [];
-const impresos = new Set();
 
-/* QZ CONNECT */
-window.addEventListener("load", async () => {
-  try {
-    if (!window.qz) return;
+// PEDIDO
 
-    qz.security.setCertificatePromise(res => res());
-    qz.security.setSignaturePromise(toSign => res => res());
+window.pedido = [];
 
-    await qz.websocket.connect();
-    console.log("QZ conectado");
-  } catch (e) {
-    console.log("QZ error", e);
-  }
-});
 
-/* AGREGAR */
-window.agregarPedido = function (producto, precio) {
+// AGREGAR PEDIDO
 
-  const obs = document.getElementById("observacion").value;
+window.agregarPedido = function(producto, precio){
+
+  let observacion =
+    document.getElementById("observacion").value;
+
   let item = producto;
 
-  if (obs.trim()) item += " | " + obs;
+  if(observacion.trim() !== ""){
 
-  pedido.push({ nombre: item, precio });
+    item += " | Obs: " + observacion;
+  }
 
-  render();
-  calcularTotal();
+  pedido.push({
+    nombre: item,
+    precio: precio
+  });
+
+  renderizarPedido();
+
+  actualizarTotal();
 
   document.getElementById("observacion").value = "";
-};
-
-/* RENDER */
-function render() {
-  const lista = document.getElementById("lista");
-  lista.innerHTML = "";
-
-  pedido.forEach((p, i) => {
-    lista.innerHTML += `
-      <li>
-        ${p.nombre} - $${p.precio}
-        <button onclick="eliminar(${i})">X</button>
-      </li>`;
-  });
 }
 
-/* ELIMINAR */
-window.eliminar = function (i) {
-  pedido.splice(i, 1);
-  render();
-  calcularTotal();
-};
 
-/* TOTAL */
-function calcularTotal() {
+// ROLL PERSONALIZADO
 
-  const subtotal = pedido.reduce((a,b)=>a+b.precio,0);
-  const d = document.getElementById("direccion").value.split("|");
-  const delivery = parseInt(d[1] || 0);
+window.agregarRollPersonalizado = function(){
+
+  let roll =
+    document.getElementById("rollPersonalizado").value;
+
+  if(roll.trim() !== ""){
+
+    agregarPedido("Roll: " + roll, 5490);
+
+    document.getElementById("rollPersonalizado").value = "";
+  }
+}
+
+
+// ELIMINAR
+
+window.eliminarProducto = function(index){
+
+  pedido.splice(index, 1);
+
+  renderizarPedido();
+
+  actualizarTotal();
+}
+
+
+// TOTAL
+
+window.actualizarTotal = function(){
+
+  let subtotal = 0;
+
+  pedido.forEach(item => {
+    subtotal += item.precio;
+  });
+
+  let direccionData =
+    document.getElementById("direccion")
+    .value.split("|");
+
+  let delivery =
+    parseInt(direccionData[1]);
+
+  let total = subtotal + delivery;
 
   document.getElementById("total").innerText =
-    "Total: $" + (subtotal + delivery);
+    "Total: $" + total;
 }
 
-/* VACÍO */
-window.vaciarPedido = function () {
+
+// RENDER
+
+window.renderizarPedido = function(){
+
+  let lista =
+    document.getElementById("lista");
+
+  lista.innerHTML = "";
+
+  pedido.forEach((item, index) => {
+
+    lista.innerHTML += `
+      <li style="margin-bottom:10px;">
+
+        ${item.nombre} - $${item.precio}
+
+        <button
+          onclick="eliminarProducto(${index})"
+          style="
+            background:red;
+            margin-left:10px;
+            padding:5px 10px;
+            border:none;
+            border-radius:5px;
+            color:white;
+          ">
+
+          X
+
+        </button>
+
+      </li>
+    `;
+  });
+}
+
+
+// VACIAR
+
+window.vaciarPedido = function(){
+
   pedido = [];
-  render();
-  calcularTotal();
-};
 
-/* FIREBASE SAVE */
-async function guardar(data){
-  await addDoc(collection(db,"pedidos"),data);
+  renderizarPedido();
+
+  actualizarTotal();
 }
 
-/* IMPRIMIR */
-window.imprimirComanda = async function () {
 
-  const cliente = cliente.value;
-  const telefono = telefono.value;
-  const direccionTexto = document.getElementById("direccionTexto").value;
-  const metodoPago = document.getElementById("metodoPago").value;
-  const horaEntrega = document.getElementById("horaEntrega").value;
+// ENVIAR A FIREBASE
 
-  const subtotal = pedido.reduce((a,b)=>a+b.precio,0);
-  const d = document.getElementById("direccion").value.split("|");
-  const delivery = parseInt(d[1] || 0);
-
-  const total = subtotal + delivery;
-
-  const data = {
-    cliente,
-    telefono,
-    direccionTexto,
-    metodoPago,
-    horaEntrega,
-    pedido,
-    total,
-    fecha: Date.now()
-  };
-
-  await guardar(data);
-
-  const texto = `
-ASIAN SUSHI
-
-CLIENTE: ${cliente}
-TEL: ${telefono}
-
-PEDIDO:
-${pedido.map(p=>p.nombre+" - $"+p.precio).join("\n")}
-
-TOTAL: $${total}
-`;
+window.enviarPedido = async function(){
 
   try {
-    const config = qz.configs.create("DASIANSUSHI-001");
-    await qz.print(config,[texto]);
-    alert("Impreso OK");
-  } catch(e){
-    console.log(e);
-    alert("Error impresión");
+
+    let cliente =
+      document.getElementById("cliente").value;
+
+    let telefono =
+      document.getElementById("telefono").value;
+
+    let palitos =
+      document.getElementById("Palitos").value;
+
+    let salsas =
+      document.getElementById("Salsas").value;
+
+    let direccionData =
+      document.getElementById("direccion")
+      .value.split("|");
+
+    let direccion =
+      direccionData[0];
+
+    let delivery =
+      parseInt(direccionData[1]);
+
+    let direccionTexto =
+      document.getElementById("direccionTexto").value;
+
+    let subtotal =
+      pedido.reduce((sum, item) =>
+      sum + item.precio, 0);
+
+    let total =
+      subtotal + delivery;
+
+    let datos = {
+
+      cliente: cliente,
+
+      telefono: telefono,
+
+      palitos: palitos,
+
+      salsas: salsas,
+
+      direccion: direccion,
+
+      direccionTexto: direccionTexto,
+
+      delivery: delivery,
+
+      subtotal: subtotal,
+
+      total: total,
+
+      productos: pedido,
+
+      fecha: new Date().toLocaleString()
+
+    };
+
+    await addDoc(
+      collection(db, "pedidos"),
+      datos
+    );
+
+    alert("Pedido enviado al local");
+
+    vaciarPedido();
+
+  } catch(error){
+
+    console.error(error);
+
+    alert("Error al enviar pedido");
   }
-};
 
-/* PRUEBA */
-window.probar = async function(){
-  try{
-    const config = qz.configs.create("DASIANSUSHI-001");
-    await qz.print(config,["PRUEBA OK"]);
-  }catch(e){
-    alert("No imprime");
-    console.log(e);
-  }
-};
-
-/* TIEMPO REAL */
-const q = query(collection(db,"pedidos"),orderBy("fecha","desc"));
-
-onSnapshot(q,(snap)=>{
-
-  let div = document.getElementById("live");
-
-  if(!div){
-    div = document.createElement("div");
-    div.id="live";
-    document.body.appendChild(div);
-  }
-
-  div.innerHTML="";
-
-  snap.forEach(doc=>{
-    const d = doc.data();
-
-    div.innerHTML += `
-      <div style="background:white;padding:10px;margin:10px">
-        <b>${d.cliente}</b><br>
-        Total: $${d.total}
-      </div>`;
-  });
-
-  snap.docChanges().forEach(ch=>{
-    if(ch.type==="added"){
-      if(!impresos.has(ch.doc.id)){
-        impresos.add(ch.doc.id);
-        imprimirAutomatico(ch.doc.data());
-      }
-    }
-  });
-});
-
-window.imprimirAutomatico = async function(data){
-
-  const texto = `
-ASIAN SUSHI
-
-CLIENTE: ${data.cliente}
-
-${data.pedido.map(p=>p.nombre+" - $"+p.precio).join("\n")}
-
-TOTAL: $${data.total}
-`;
-
-  try{
-    const config = qz.configs.create("DASIANSUSHI-001");
-    await qz.print(config,[texto]);
-  }catch(e){
-    console.log(e);
-  }
-};
+}
 
 </script>
 
